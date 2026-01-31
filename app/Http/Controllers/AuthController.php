@@ -21,7 +21,6 @@ class AuthController extends Controller
 
     public function adminLogin(Request $request)
     {
-        // dd($request->all());
        return $this->login($request, 'admin');
     }
 
@@ -30,29 +29,37 @@ class AuthController extends Controller
         return $this->login($request, 'user');
     }
 
-   public function login(Request $request, string $role)
-{
-    
-    $credentials = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required'
-    ]);
+    public function login(Request $request, string $role)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-    if (!Auth::attempt($credentials)) {
+        if (!Auth::attempt($credentials)) {
+            return back()->with('error', 'Invalid email or password');
+        }
+
+        $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        if (Auth::user()->role == $role) {
+            return redirect('/'. $role .'/dashboard');
+        }
+
         return back()->with('error', 'Invalid email or password');
+
     }
 
-    $request->session()->regenerate();
+    public function logout()
+    {
+        if(Auth::check()){
+            Auth::logout();
+            return redirect()->route('login');
+        }
+        return redirect()->route('login');
 
-    $user = Auth::user();
-
-    if ($user->role === 'admin') {
-        
-        return redirect('/admin/dashboard');
-        // return response()->json(['message' => 'Admin login success']);
     }
-
-    return response()->json(['message' => 'User login success']);
-}
 
 }

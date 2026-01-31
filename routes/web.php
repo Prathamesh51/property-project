@@ -16,7 +16,7 @@ Route::get('/test', function () {
 
 
 Route::prefix('login')->group(function () {
-    Route::get('', [AuthController::class, 'userLoginForm']);
+    Route::get('', [AuthController::class, 'userLoginForm'])->name('login');
     Route::post('', [AuthController::class, 'userLogin']);
 
     Route::get('/admin', [AuthController::class, 'adminLoginForm']);
@@ -27,9 +27,18 @@ Route::prefix('login')->group(function () {
     // Route::middleware(['auth', 'role:admin'])->group(function () {
     //     Route::resource('/admin/properties', PropertyController::class);
     //     });
-    Route::get('/admin/dashboard', [PropertyController::class, 'adminDashboard'])->middleware('userAuth');
+    Route::middleware(['auth', 'userAuth:admin'])->group(function() {
+        Route::prefix('admin')->group(function () {
+            Route::get('/dashboard', [PropertyController::class, 'adminDashboard']);
+        });
+    });
 
-    Route::get('/dashboard', [PropertyController::class, 'userDashboard']);
+    Route::middleware(['auth','userAuth:user'])->group(function() {
+        Route::prefix('user')->group(function() {
+            Route::get('/dashboard', [PropertyController::class, 'userDashboard']);
+        });
+    });
+    Route::get('/logout', [AuthController::class, 'logout']);
 
     Route::get('/message', [PropertyController::class, 'frontPage']);
 

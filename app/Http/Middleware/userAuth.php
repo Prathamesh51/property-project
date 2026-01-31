@@ -14,9 +14,13 @@ class userAuth
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, $role): Response
     {
-        if(!Auth::check() || Auth::user()->role !== 'admin'){
+        if(!Auth::check() ){
+            return redirect()->route('login');
+        }
+
+        if(Auth::user()->role !== $role){
             abort(403);
         }
 

@@ -36,10 +36,6 @@
                         <button class="btn btn-primary w-100">Login</button>
                     </form>
                 </div>
-
-                <div class="card-footer text-center">
-                    <small>Admin? <a href="{{ url('/login/admin') }}">Login here</a></small>
-                </div>
             </div>
 
         </div>

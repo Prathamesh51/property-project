@@ -66,23 +66,19 @@ class PropertyController extends Controller
 
     public function adminDashboard()
     {
-        // dd('in');
         $properties = Property::all();
 
         $user = Auth::user();
         $userName = $user ? $user->name : '';
-        return view('dashboard.adminDashboard', compact('properties', 'userName'));
+        return view('dashboard.propertyListing', compact('properties', 'userName'));
     }
 
-     public function test()
+    public function userDashboard()
     {
-        // dd('in');    
-        return redirect('/message');
-        // return response()->json(['message' => 'something']);
-    }
+        $properties = Property::all();
 
-    public function frontPage()
-    {
-        return view('dashboard.adminDashboard');
+        $user = Auth::user();
+        $userName = $user ? $user->name : '';
+        return view('dashboard.propertyListing', compact('properties', 'userName'));
     }
 }
