@@ -36,10 +36,6 @@
                         <button class="btn btn-dark w-100">Login</button>
                     </form>
                 </div>
-
-                <div class="card-footer text-center">
-                    <small>User? <a href="{{ url('/login') }}">Login here</a></small>
-                </div>
             </div>
 
         </div>
