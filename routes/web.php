@@ -4,8 +4,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PropertyController;
 use Illuminate\Support\Facades\Route;
 
-
-
 Route::get('/', function () {
     return view('welcome');
 });
@@ -23,23 +21,22 @@ Route::prefix('login')->group(function () {
     Route::post('/admin', [AuthController::class, 'adminLogin']);
 });
 
-
-    // Route::middleware(['auth', 'role:admin'])->group(function () {
-    //     Route::resource('/admin/properties', PropertyController::class);
-    //     });
-    Route::middleware(['auth', 'userAuth:admin'])->group(function() {
-        Route::prefix('admin')->group(function () {
-            Route::get('/dashboard', [PropertyController::class, 'adminDashboard']);
-        });
+Route::prefix('property')->group(function () {
+    Route::middleware(['auth', 'userAuth:user,admin'])->group(function () {
+        Route::get('/', [PropertyController::class, 'index']);
     });
-
-    Route::middleware(['auth','userAuth:user'])->group(function() {
-        Route::prefix('user')->group(function() {
-            Route::get('/dashboard', [PropertyController::class, 'userDashboard']);
-        });
+    Route::middleware(['auth','userAuth:admin'])->group(function() {
+        Route::get('/create', [PropertyController::class, 'create']);
+        Route::post('/store', [PropertyController::class, 'store']);
+        Route::get('/{propetryId}/edit', [PropertyController::class, 'edit']);
+        Route::put('/{propetryId}', [PropertyController::class, 'update']);
+        Route::delete('/{propetryId}', [PropertyController::class, 'destroy']);
+        // Route::resource('', PropertyController::class)->names('property');
     });
-    Route::get('/logout', [AuthController::class, 'logout']);
+});
 
-    Route::get('/message', [PropertyController::class, 'frontPage']);
+Route::get('/logout', [AuthController::class, 'logout']);
+
+Route::get('/message', [PropertyController::class, 'frontPage']);
 
 Route::post('/test', [PropertyController::class, 'test']);

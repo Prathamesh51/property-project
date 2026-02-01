@@ -45,7 +45,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if (Auth::user()->role == $role) {
-            return redirect('/'. $role .'/dashboard');
+            return redirect('/property');
         }
 
         return back()->with('error', 'Invalid email or password');

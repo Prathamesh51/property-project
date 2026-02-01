@@ -13,7 +13,11 @@ class PropertyController extends Controller
      */
     public function index()
     {
-        //
+        $properties = Property::all();
+
+        $user = Auth::user();
+        $userName = $user ? $user->name : '';
+        return view('property.index', compact('properties', 'userName'));
     }
 
     /**
@@ -21,7 +25,7 @@ class PropertyController extends Controller
      */
     public function create()
     {
-        //
+        return view('property.create');
     }
 
     /**
@@ -29,7 +33,21 @@ class PropertyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $requestData = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'type' => 'required|string|max:100',
+            'price' => 'required|numeric',
+            'location' => 'required|string|max:255',
+            'status' => 'required|in:available,sold',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $property = new Property();
+        $property->fill($requestData);
+        $property->save();
+
+        return redirect('/property')->with('success', 'Property created successfully.');
     }
 
     /**
@@ -43,9 +61,10 @@ class PropertyController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $propetryId)
     {
-        //
+       $property = Property::findOrFail($propetryId);
+        return view('property.edit', compact('property'));
     }
 
     /**
@@ -53,7 +72,19 @@ class PropertyController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $requestData = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+            'status' => 'required|in:available,sold',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        $property = Property::findOrFail($id);
+        $property->fill($requestData);
+        $property->save();
+
+        return redirect('/property')->with('success', 'Property updated successfully.');
     }
 
     /**
@@ -61,24 +92,9 @@ class PropertyController extends Controller
      */
     public function destroy(string $id)
     {
-        //
-    }
+        $property = Property::findOrFail($id);
+        $property->delete();
 
-    public function adminDashboard()
-    {
-        $properties = Property::all();
-
-        $user = Auth::user();
-        $userName = $user ? $user->name : '';
-        return view('dashboard.propertyListing', compact('properties', 'userName'));
-    }
-
-    public function userDashboard()
-    {
-        $properties = Property::all();
-
-        $user = Auth::user();
-        $userName = $user ? $user->name : '';
-        return view('dashboard.propertyListing', compact('properties', 'userName'));
+        return redirect('/property')->with('success', 'Property deleted successfully.');
     }
 }
