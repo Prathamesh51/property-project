@@ -27,6 +27,11 @@
                     </div>
                 @endif
 
+                @if(session('success'))
+                    <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
+                        {{ session('success') }}
+                    </div>
+                @endif
                 <form method="POST" action="{{ url('/login') }}">
                     @csrf
 
@@ -61,9 +66,13 @@
 
                 </form>
 
+                <p class="text-center text-gray-600">
+                    Don't have an account?
+                    <a href="{{ url('/register-form') }}" class="text-blue-600 hover:underline">
+                        Register here
+                    </a>
+                </p>
             </div>
-        </div>
-
     </div>
 </div>
 

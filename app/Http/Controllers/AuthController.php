@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CreatedVia;
+use App\Jobs\SendUserApprovedMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -44,11 +48,21 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if (Auth::user()->role == $role) {
-            return redirect('/property');
+        if ($user->role !== $role) {
+            Auth::logout();
+            return back()->with('error', 'You do not have access to this role');
         }
 
-        return back()->with('error', 'Invalid email or password');
+        if (!$user->is_active) {
+            if($user->created_via === CreatedVia::SELF_REGISTER) {
+                Auth::logout();
+                return back()->with('error', 'Your account is not active. Please wait for admin approval.');
+            }
+            Auth::logout();
+            return back()->with('error', 'Your account is not active');
+        }
+
+        return redirect('/property');
 
     }
 
@@ -60,6 +74,53 @@ class AuthController extends Controller
         }
         return redirect()->route('login');
 
+    }
+
+    public function userRegisterForm()
+    {
+        return view('auth.registerForm');
+    }
+
+    public function userRegister(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'confirmed_password' => 'required|string|min:6|same:password',
+        ]);
+
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->role = 'user';
+        $user->is_active = false;
+        $user->created_via = CreatedVia::SELF_REGISTER;
+        $user->save();
+
+        return redirect()->route('login')->with('success', 'Registration successful. Please wait for admin approval.');
+    }
+
+    public function userRequests()
+    {
+        $users = User::where('role','user')
+                ->where('created_via', CreatedVia::SELF_REGISTER)
+                ->get();
+        $userName = Auth::user()->name;
+        return view('property.userRequests', compact('users', 'userName'));
+    }
+
+    public function approveUser($userId)
+    {
+        
+        $user = User::findOrFail($userId);
+        $user->is_active = true;
+        $user->save();
+
+        SendUserApprovedMail::dispatch($user);
+        
+        return redirect()->back()->with('success', 'User approved successfully.');
     }
 
 }

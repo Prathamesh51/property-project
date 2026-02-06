@@ -8,9 +8,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test', function () {
-    return "Redirect Working";
-});
+Route::get('/register-form', [AuthController::class, 'userRegisterForm']);
+Route::post('/register', [AuthController::class, 'userRegister']);
 
 
 Route::prefix('login')->group(function () {
@@ -32,6 +31,8 @@ Route::prefix('property')->group(function () {
         Route::get('/{propetryId}/edit', [PropertyController::class, 'edit']);
         Route::put('/{propetryId}', [PropertyController::class, 'update']);
         Route::delete('/{propetryId}', [PropertyController::class, 'destroy']);
+        Route::get('/user-requests', [AuthController::class, 'userRequests']);
+        Route::post('/approve-request/{userId}', [AuthController::class, 'approveUser']);
         // Route::resource('', PropertyController::class)->names('property');
     });
 });
