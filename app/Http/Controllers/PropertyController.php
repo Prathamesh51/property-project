@@ -11,10 +11,9 @@ class PropertyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $properties = Property::all();
-
+    public function index(Request $request)
+    {        
+        $properties = $this->getPropertiesData($request);
         $user = Auth::user();
         $userName = $user ? $user->name : '';
         return view('property.index', compact('properties', 'userName'));
@@ -25,7 +24,9 @@ class PropertyController extends Controller
      */
     public function create()
     {
-        return view('property.create');
+        $user = Auth::user();
+        $userName = $user ? $user->name : '';
+        return view('property.create', compact('userName'));
     }
 
     /**
@@ -64,7 +65,9 @@ class PropertyController extends Controller
     public function edit(string $propetryId)
     {
        $property = Property::findOrFail($propetryId);
-        return view('property.edit', compact('property'));
+       $user = Auth::user();
+        $userName = $user ? $user->name : '';
+        return view('property.edit', compact('property', 'userName'));
     }
 
     /**
@@ -96,5 +99,39 @@ class PropertyController extends Controller
         $property->delete();
 
         return redirect('/property')->with('success', 'Property deleted successfully.');
+    }
+
+    public function filterProperties(Request $request)
+    {
+        $properties = $this->getPropertiesData($request);
+        return view('property.propertyTable', compact('properties'))->render();
+    }
+
+    private function getPropertiesData(Request $request)
+    {
+        $search = $request->input('search');
+        $min_price = $request->input('min_price');
+        $max_price = $request->input('max_price');
+
+        $query = Property::query();
+// dd($query->get());
+        $query->when($search, function ($q) use ($search) {
+            $q->where('title', 'ilike', "%".$search."%")
+                ->orWhere('description', 'ilike', "%".$search."%")
+                ->orWhere('location', 'ilike', "%".$search."%")
+                ->orWhere('type', 'ilike', "%".$search."%")
+                ->orWhere('price', 'ilike', "%".$search."%");
+        });
+// dd($query->tosql());
+    // dd($query->get()->toArray());
+        $query->when($min_price, function ($q) use ($min_price) {
+            $q->where('price', '>=', $min_price);
+        });
+        $query->when($max_price, function ($q) use ($max_price) {
+            $q->where('price', '<=', $max_price);
+        });
+        $properties = $query->paginate(5);
+        // dd($min_price,$properties->toArray());
+        return $properties;
     }
 }

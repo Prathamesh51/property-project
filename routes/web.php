@@ -24,6 +24,7 @@ Route::prefix('login')->group(function () {
 Route::prefix('property')->group(function () {
     Route::middleware(['auth', 'userAuth:user,admin'])->group(function () {
         Route::get('/', [PropertyController::class, 'index']);
+        Route::get('/filter', [PropertyController::class, 'filterProperties']);
     });
     Route::middleware(['auth','userAuth:admin'])->group(function() {
         Route::get('/create', [PropertyController::class, 'create']);
