@@ -1,93 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update Property</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
+<body class="bg-gray-100">
+ <!-- Header -->
+    @include('property.header')
 
-                <div class="card shadow">
-                    <div class="card-header text-center">
-                        <h4>Update Property</h4>
+<div class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-lg">
+
+        <!-- Card -->
+        <div class="bg-white shadow-lg rounded-lg">
+
+            <!-- Header -->
+            <div class="bg-blue-600 text-white text-center py-4 rounded-t-lg">
+                <h4 class="text-xl font-semibold">Update Property</h4>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6">
+
+                @if(session('error'))
+                    <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                <form method="POST"
+                      action="{{ url('/property/' . $property->id) }}"
+                      enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Title</label>
+                        <input type="text" name="title"
+                               value="{{ $property->title }}"
+                               class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                               required>
                     </div>
 
-                    <div class="card-body">
-                        @if(session('error'))
-                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Description</label>
+                        <textarea name="description" rows="4"
+                                  class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                                  required>{{ $property->description }}</textarea>
+                    </div>
+
+                    <!-- Type -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Type</label>
+                        <input type="text" name="type"
+                               value="{{ $property->type }}"
+                               class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                               required>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Price</label>
+                        <input type="number" name="price"
+                               value="{{ $property->price }}"
+                               class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                               required>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Location</label>
+                        <input type="text" name="location"
+                               value="{{ $property->location }}"
+                               class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                               required>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Status</label>
+                        <select name="status"
+                                class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-400"
+                                required>
+                            <option value="available"
+                                {{ $property->status == 'available' ? 'selected' : '' }}>
+                                Available
+                            </option>
+
+                            <option value="sold"
+                                {{ $property->status == 'sold' ? 'selected' : '' }}>
+                                Sold
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Image -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-1">Image</label>
+
+                        <input type="file" name="image"
+                               class="w-full border p-2 rounded">
+
+                        @if($property->image)
+                            <img src="{{ asset('storage/' . $property->image) }}"
+                                 class="mt-2 rounded border"
+                                 width="150">
                         @endif
-
-                        <form method="POST" action="{{ url('/property/' . $property->id) }}" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-
-                            {{-- Title --}}
-                            <div class="mb-3">
-                                <label for="title" class="form-label">Title</label>
-                                <input type="text" name="title" id="title" class="form-control"
-                                    value="{{ $property->title }}" required>
-                            </div>
-
-                            {{-- Description --}}
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Description</label>
-                                <textarea name="description" id="description" class="form-control" rows="4" required>{{ $property->description }}</textarea>
-                            </div>
-
-                            {{-- Type --}}
-                            <div class="mb-3">
-                                <label for="type" class="form-label">Type</label>
-                                <input type="text" name="type" id="type" class="form-control"
-                                    value="{{ $property->type }}" required>
-                            </div>
-
-                            {{-- Price --}}
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Price</label>
-                                <input type="number" name="price" id="price" class="form-control"
-                                    value="{{ $property->price }}" required>
-                            </div>
-
-                            {{-- Location --}}
-                            <div class="mb-3">
-                                <label for="location" class="form-label">Location</label>
-                                <input type="text" name="location" id="location" class="form-control"
-                                    value="{{ $property->location }}" required>
-                            </div>
-
-                            {{-- Status --}}
-                            <div class="mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <select name="status" id="status" class="form-select" required>
-                                    <option value="available" {{ $property->status == 'available' ? 'selected' : '' }}>Available</option>
-                                    <option value="sold" {{ $property->status == 'sold' ? 'selected' : '' }}>Sold</option>
-                                </select>
-                            </div>
-
-                            {{-- Image --}}
-                            <div class="mb-3">
-                                <label for="image" class="form-label">Image</label>
-                                <input type="file" name="image" id="image" class="form-control">
-                                @if($property->image)
-                                <img src="{{ asset('storage/' . $property->image) }}" alt="Property Image" class="mt-2" width="150">
-                                @endif
-                            </div>
-
-                            <button type="submit" class="btn btn-primary">Update Property</button>
-                        </form>
-
                     </div>
-                </div>
+
+                    <!-- Button -->
+                    <button type="submit"
+                            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+                        Update Property
+                    </button>
+
+                </form>
 
             </div>
         </div>
-    </div>
-</body>
 
+    </div>
+</div>
+
+</body>
 </html>
