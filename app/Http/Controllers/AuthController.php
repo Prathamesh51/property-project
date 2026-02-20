@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\CreatedVia;
 use App\Jobs\SendUserApprovedMail;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -119,8 +120,24 @@ class AuthController extends Controller
         $user->save();
 
         SendUserApprovedMail::dispatch($user);
+        // $token = Str::random(64);
+
+        // DB::table('password_resets')->insert([
+        //     'email' => $user->email,
+        //     'token' => $token,
+        //     'created_at' => now()
+        // ]);
+        // SendUserApprovedMail::dispatch($user, $token);
         
         return redirect()->back()->with('success', 'User approved successfully.');
+    }
+
+    public function usersList()
+    {
+        $users = User::where('is_active', true)->get();
+        $roles = Role::all();
+        $userName = Auth::user()->name;
+        return view('property.usersList', compact('users', 'userName','roles'));
     }
 
 }
