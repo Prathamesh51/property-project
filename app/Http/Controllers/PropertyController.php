@@ -2,21 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePropertyRequest;
 use App\Models\Property;
+use App\Repositories\Contracts\PropertyRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PropertyController extends Controller
 {
+    protected $propertyRepository;
+    public function __construct(PropertyRepository $propertyRepository)
+    {
+        $this->propertyRepository = $propertyRepository;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {        
-        $properties = $this->getPropertiesData($request);
-        $user = Auth::user();
-        $userName = $user ? $user->name : '';
-        return view('property.index', compact('properties', 'userName'));
+        $data = $this->propertyRepository->getAllPropertyies($request->toArray());
+        return view('property.index', $data);
     }
 
     /**
@@ -32,23 +37,14 @@ class PropertyController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreatePropertyRequest $request)
     {
-        $requestData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'type' => 'required|string|max:100',
-            'price' => 'required|numeric',
-            'location' => 'required|string|max:255',
-            'status' => 'required|in:available,sold',
-            'image' => 'nullable|image|max:2048',
-        ]);
+        $property = $this->propertyRepository->createProperty($request->toArray());
 
-        $property = new Property();
-        $property->fill($requestData);
-        $property->save();
-
-        return redirect('/property')->with('success', 'Property created successfully.');
+        if($property) {
+            return redirect('/property')->with('success', 'Property created successfully.');
+        } 
+        return response()->json(['error' => 'Failed to create property'], 500);
     }
 
     /**
@@ -64,29 +60,16 @@ class PropertyController extends Controller
      */
     public function edit(string $propetryId)
     {
-       $property = Property::findOrFail($propetryId);
-       $user = Auth::user();
-        $userName = $user ? $user->name : '';
-        return view('property.edit', compact('property', 'userName'));
+        $data = $this->propertyRepository->editProperty($propetryId);
+        return view('property.edit', $data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreatePropertyRequest $request, string $id)
     {
-        $requestData = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'status' => 'required|in:available,sold',
-            'image' => 'nullable|image|max:2048',
-        ]);
-
-        $property = Property::findOrFail($id);
-        $property->fill($requestData);
-        $property->save();
-
+        $this->propertyRepository->updateProperty($id, $request->toArray());
         return redirect('/property')->with('success', 'Property updated successfully.');
     }
 
@@ -95,43 +78,16 @@ class PropertyController extends Controller
      */
     public function destroy(string $id)
     {
-        $property = Property::findOrFail($id);
-        $property->delete();
-
-        return redirect('/property')->with('success', 'Property deleted successfully.');
+        $deleted = $this->propertyRepository->deleteProperty($id);
+        if ($deleted) {
+            return redirect('/property')->with('success', 'Property deleted successfully.');
+        }
+        return redirect('/property')->with('error', 'Failed to delete property.');
     }
 
     public function filterProperties(Request $request)
     {
-        $properties = $this->getPropertiesData($request);
-        return view('property.propertyTable', compact('properties'))->render();
-    }
-
-    private function getPropertiesData(Request $request)
-    {
-        $search = $request->input('search');
-        $min_price = $request->input('min_price');
-        $max_price = $request->input('max_price');
-
-        $query = Property::query();
-// dd($query->get());
-        $query->when($search, function ($q) use ($search) {
-            $q->where('title', 'ilike', "%".$search."%")
-                ->orWhere('description', 'ilike', "%".$search."%")
-                ->orWhere('location', 'ilike', "%".$search."%")
-                ->orWhere('type', 'ilike', "%".$search."%")
-                ->orWhere('price', 'ilike', "%".$search."%");
-        });
-// dd($query->tosql());
-    // dd($query->get()->toArray());
-        $query->when($min_price, function ($q) use ($min_price) {
-            $q->where('price', '>=', $min_price);
-        });
-        $query->when($max_price, function ($q) use ($max_price) {
-            $q->where('price', '<=', $max_price);
-        });
-        $properties = $query->paginate(5);
-        // dd($min_price,$properties->toArray());
-        return $properties;
+        $data = $this->propertyRepository->getAllPropertyies($request->toArray());
+        return view('property.propertyTable', $data)->render();
     }
 }
