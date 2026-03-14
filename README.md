@@ -71,12 +71,11 @@ Role-based permission is implemented to control access to certain features.
 5. Start the development server
 
 Example commands:
-
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan serve
+    - composer install
+    - cp .env.example .env
+    - php artisan key:generate
+    - php artisan migrate
+    - php artisan serve
 
 ## Author
 Prathamesh Chavan
